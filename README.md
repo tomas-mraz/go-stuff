@@ -10,10 +10,9 @@ Mage - building tool - https://pkg.go.dev/github.com/magefile/mage#section-readm
 - [ConEmu](https://conemu.github.io/) - Terminal
 
 > How to add `apt-cyg` package manager:  
-> `wget https://rawgit.com/transcode-open/apt-cyg/master/apt-cyg`  
-> or `curl -O https://rawgit.com/transcode-open/apt-cyg/master/apt-cyg`  
-> `chmod +x apt-cyg`  
+> `curl -O https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg`  
 > `mv apt-cyg /usr/local/bin`
+> `apt-cyg update`
 
 
 # External links
