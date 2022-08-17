@@ -1,17 +1,20 @@
-# Notes
-Things about Golang...
+About Golang and things around...
+
+# Docs
+- [Mermaid](https://mermaid-js.github.io/mermaid/) - Graphs in markdown
 
 # Building
-Mage - building tool - https://pkg.go.dev/github.com/magefile/mage#section-readme
+- Mage - building tool - https://pkg.go.dev/github.com/magefile/mage#section-readme
 
 
 ## On Windows
-- [cygwin](https://www.cygwin.com/) - Linux environment
+- [Cygwin](https://www.cygwin.com/) - Linux environment
 - [ConEmu](https://conemu.github.io/) - Terminal
 
 > How to add `apt-cyg` package manager:  
+> Require installation of Cygwin with packages `wget` or `lynx`.  
 > `curl -O https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg`  
-> `mv apt-cyg /usr/local/bin`
+> `mv apt-cyg /usr/local/bin`  
 > `apt-cyg update`
 
 
