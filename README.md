@@ -3,6 +3,9 @@ About Golang and things around...
 # Docs
 - [Mermaid](https://mermaid-js.github.io/mermaid/) - Graphs in markdown
 
+# Code
+- [Swagger/OpenAPI](https://swagger.io/) - API Designer 
+
 # Building
 - Mage - building tool - https://pkg.go.dev/github.com/magefile/mage#section-readme
 
