@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"io"
 	"log"
@@ -45,21 +46,45 @@ func (p *proxy) ServeHTTP(responseWriter http.ResponseWriter, req *http.Request)
 	log.Printf("Accept request %s to %s\n", req.Method, req.URL)
 	destinationURL := EchoBaseURL.ResolveReference(req.URL).String()
 
+	// logging headers
+	for name, headers := range req.Header {
+		for _, h := range headers {
+			log.Printf("Original header %v: %v\n", name, h)
+		}
+	}
+
+	// logging body
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		log.Println("Body read Error:", err.Error())
+		return
+	}
+	log.Printf("Original body: %v\n", string(buf))
+	reader := io.NopCloser(bytes.NewBuffer(buf))
+	req.Body = reader
+
 	// create new request with old body and new destination
 	newReq, err := http.NewRequest(req.Method, destinationURL, req.Body)
+
 	// copy headers to new request
 	delHopHeaders(req.Header)
 	copyHeader(newReq.Header, req.Header)
 
-	client := &http.Client{}
+	// logging headers
+	for name, headers := range newReq.Header {
+		for _, h := range headers {
+			log.Printf("Request header %v: %v\n", name, h)
+		}
+	}
 
+	client := &http.Client{}
 	resp, err := client.Do(newReq)
 	if err != nil {
 		http.Error(responseWriter, "Server Error", http.StatusInternalServerError)
 		log.Fatal("ServeHTTP:", err)
 	}
 	defer resp.Body.Close()
-	log.Printf("Received response %s from %s\n", resp.Status, destinationURL)
+	log.Printf("Received response %s from %s\n\n", resp.Status, destinationURL)
 
 	delHopHeaders(resp.Header)
 	copyHeader(responseWriter.Header(), resp.Header)
@@ -69,6 +94,7 @@ func (p *proxy) ServeHTTP(responseWriter http.ResponseWriter, req *http.Request)
 
 // the base of code is from https://gist.github.com/yowu/f7dc34bd4736a65ff28d?permalink_comment_id=4068010
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	var addr = flag.String("addr", "0.0.0.0:8484", "The addr of the application.")
 	flag.Parse()
 
