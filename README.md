@@ -3,8 +3,11 @@ About Golang and things around...
 # Building
 - Mage - building tool - https://pkg.go.dev/github.com/magefile/mage#section-readme
 
+# Code
 
-## On Windows
+- Milliseconds in log timeformat like `2023-11-20 23:15:10.123456 Hello` ... `log.SetFlags(log.LstdFlags | log.Lmicroseconds)`
+
+# On Windows
 - [Cygwin](https://www.cygwin.com/) - Linux environment
 - [ConEmu](https://conemu.github.io/) - Terminal
 
