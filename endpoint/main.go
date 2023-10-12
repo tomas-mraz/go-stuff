@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sort"
 	"sync"
 	"time"
 )
@@ -18,12 +19,10 @@ type endpoint struct {
 	requests   [maxRequests]string
 }
 
-const maxRequests = 30
+const (
+	maxRequests = 30
 
-var (
-	endpoints  map[string]*endpoint
-	requestsMu sync.Mutex
-	htmlPage   = "<html><head><title>BlackHole endpoint</title></head>" +
+	htmlPageStart = "<html><head><title>BlackHole endpoint</title></head>" +
 		"<body><h1>Tady žijí testovací endpointy</h1><ul>" +
 		"<li><b>/</b> ... tahle stránka</li>" +
 		"<li><b>/log</b> ... již neukazuje souhrnné logy (funguje jako přijímací endpoint viz /* níže)</li>" +
@@ -33,7 +32,15 @@ var (
 		"Příklady:<br>" +
 		"ferda.zona64.cz:8080<b>/magda</b> ... bude mít logy na /magda/log<br>" +
 		"ferda.zona64.cz:8080<b>/magda/123</b> ... bude mít logy na /magda/123/log<br>" +
-		"</body></html>"
+		"<br><br>" +
+		"<b><u>Používané endpointy</u></b>:" +
+		"<ul>"
+	htmlPageEnd = "</ul></body></html>"
+)
+
+var (
+	endpoints  map[string]*endpoint
+	requestsMu sync.Mutex
 )
 
 func pingHandler(writer http.ResponseWriter, request *http.Request) {
@@ -93,7 +100,20 @@ func pingHandler(writer http.ResponseWriter, request *http.Request) {
 func homePageHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Debug(r.URL.Path)
 	if r.URL.Path == "/" {
-		_, err := w.Write([]byte(htmlPage))
+		keys := make([]string, 0, len(endpoints))
+		for key := range endpoints {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+
+		a := ""
+		for _, name := range keys {
+			a += "<li><a href=\"" + name + "/log\">" + name + "</a></li>\n"
+		}
+
+		b := htmlPageStart + a + htmlPageEnd
+		_, err := w.Write([]byte(b))
+
 		if err != nil {
 			slog.Error("writing homepage error: " + err.Error())
 			return
