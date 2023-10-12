@@ -108,7 +108,7 @@ func homePageHandler(w http.ResponseWriter, r *http.Request) {
 
 		a := ""
 		for _, name := range keys {
-			a += "<li><a href=\"" + name + "/log\">" + name + "</a></li>\n"
+			a += "<li><a href=\"" + name + "/log\">" + name + "</a> (" + endpoints[name].lastUpdate.Format("15:04:05 02.01.2006") + ")</li>\n"
 		}
 
 		b := htmlPageStart + a + htmlPageEnd
@@ -157,9 +157,9 @@ func main() {
 	slog.Info("Start listening on port " + port)
 
 	rtr := mux.NewRouter()
-	rtr.HandleFunc("/{name:.+}/log", logPageHandler).Methods("GET")
-	rtr.HandleFunc("/{name:.+}", pingHandler).Methods("GET")
-	rtr.HandleFunc("/", homePageHandler).Methods("GET")
+	rtr.HandleFunc("/{name:.+}/log", logPageHandler)
+	rtr.HandleFunc("/{name:.+}", pingHandler)
+	rtr.HandleFunc("/", homePageHandler)
 	http.Handle("/", rtr)
 
 	err := http.ListenAndServe(":"+port, nil)
