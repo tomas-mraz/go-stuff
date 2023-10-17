@@ -27,7 +27,7 @@ const (
 		"<li><b>/</b> ... tahle stránka</li>" +
 		"<li><b>/log</b> ... již neukazuje souhrnné logy (funguje jako přijímací endpoint viz /* níže)</li>" +
 		"<li><b>/*</b> ... jakýkoli název kontextu přijímá requesty a vrací 200:{\"message\":\"Status OK\"}</li>" +
-		"<li><a href=\"/*/log\">/*<b>/log</b></a> ... <KONTEXT>/log zobrazuje posledních 30 přijatých requestů pro daný kontext (poslední je nahoře)</li>" +
+		"<li><b>/*/log</b> ... <KONTEXT>/log zobrazuje posledních 30 přijatých requestů pro daný kontext (poslední je nahoře)</li>" +
 		"</ul>" +
 		"Příklady:<br>" +
 		"ferda.zona64.cz:8080<b>/magda</b> ... bude mít logy na /magda/log<br>" +
