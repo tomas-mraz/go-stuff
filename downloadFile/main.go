@@ -2,58 +2,92 @@ package main
 
 import (
 	"fmt"
+	"github.com/dustin/go-humanize"
 	"io"
+	"log"
 	"net/http"
 	"os"
-	"path"
-	"strconv"
 	"time"
 )
 
+type progressReader struct {
+	reader   io.Reader
+	size     int64
+	position int64
+	start    int64
+}
+
 func main() {
-	downloadFile("https://wordpress.org/wordpress-4.4.2.zip", "a.zip")
+	tempFile, _ := os.OpenFile("tmp.zip", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	defer tempFile.Close()
+
+	rrr := &progressReader{}
+	go downloadFile(rrr, "https://cz.releases.ubuntu.com/releases/23.10.1/ubuntu-23.10.1-desktop-amd64.iso", tempFile)
+
+	time.Sleep(10 * time.Second)
+	rrr.Output()
+	time.Sleep(15 * time.Second)
+	rrr.Output()
+	time.Sleep(20 * time.Second)
+	rrr.Output()
+	time.Sleep(120 * time.Second)
+	rrr.Output()
+	fmt.Println("end")
 }
 
-func downloadFile(url string, filePath string) {
-	localFile, _ := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer localFile.Close()
-
-	name := path.Base(url)
-	fmt.Println("downloading file", name, "from", url)
-
-	// get size
-	headResp, _ := http.Head(url)
-	defer headResp.Body.Close()
-	size, _ := strconv.ParseInt(headResp.Header.Get("Content-Length"), 10, 64)
-	done := make(chan int64)
-	go printDownloadPercent(done, size)
-
-	// download
-	start := time.Now()
-	resp, _ := http.Get(url)
-	defer resp.Body.Close()
-	n, _ := io.Copy(localFile, resp.Body)
-	done <- n
-
-	elapsed := time.Since(start)
-	fmt.Printf("Download completed in %s\n", elapsed)
+func (pr *progressReader) Output() {
+	fmt.Print(pr.Progress() + " ")
+	fmt.Print(pr.Downloaded() + " ")
+	fmt.Print(pr.Speed() + " ")
+	fmt.Println(pr.ETA())
 }
 
-func printDownloadPercent(done chan int64, total int64) {
-	var stop bool = false
-	for {
-		select {
-		case <-done:
-			stop = true
-		default:
-			progress := <-done
-			fmt.Println(progress)
-			//fmt.Println(fmt.Sprintf("%.0f", progress/total*100), "%")
-		}
+func (pr *progressReader) ETA() string {
+	eta := (pr.size - pr.position) / pr.SpeedNumber()
+	finish := time.Now().Add(time.Duration(eta * int64(time.Second)))
+	return humanize.RelTime(time.Now(), finish, "", "")
+}
 
-		if stop {
-			break
-		}
-		//time.Sleep(10 * time.Millisecond)
+// SpeedNumber bytes per second
+func (pr *progressReader) SpeedNumber() int64 {
+	deltaTime := time.Now().UnixMilli() - pr.start
+	return pr.position / (deltaTime / 1000)
+}
+
+func (pr *progressReader) Speed() string {
+	return humanize.Bytes(uint64(pr.SpeedNumber())) + "/s"
+}
+
+func (pr *progressReader) Downloaded() string {
+	return humanize.Bytes(uint64(pr.position))
+}
+
+func (pr *progressReader) Progress() string {
+	percentage := float64(pr.position) / (float64(pr.size) / 100)
+	if percentage < 10 {
+		return fmt.Sprintf("%2.1f%%", percentage)
 	}
+	return fmt.Sprintf("%3.0f%%", percentage)
+}
+
+func downloadFile(pr *progressReader, url string, tempFile *os.File) {
+	req, _ := http.NewRequest("GET", url, nil)
+	resp, _ := http.DefaultClient.Do(req)
+	defer resp.Body.Close()
+
+	pr.reader = resp.Body
+	pr.size = resp.ContentLength
+	pr.start = time.Now().UnixMilli()
+	_, err := io.Copy(tempFile, pr)
+	if err != nil {
+		log.Fatal("error during downloading")
+	}
+}
+
+func (pr *progressReader) Read(p []byte) (int, error) {
+	n, err := pr.reader.Read(p)
+	if err == nil {
+		pr.position += int64(n)
+	}
+	return n, err
 }
