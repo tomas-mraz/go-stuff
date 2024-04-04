@@ -6,9 +6,13 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
+	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 	"grpc3/aaa_cz"
 	"log"
 	"net"
@@ -33,6 +37,15 @@ type server struct {
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *aaa_cz.HelloRequest) (*aaa_cz.HelloReply, error) {
 	log.Printf("Received: %v", in.GetName())
+
+	/*
+	    ok := peer.FromContext(ctx)
+	   	if ok {
+	   		tlsInfo := p.AuthInfo.(credentials.TLSInfo)
+	   		subject := tlsInfo.State.VerifiedChains[0][0].Subject
+	   		fmt.Println(subject)
+	   	}
+	*/
 	return &aaa_cz.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
@@ -49,6 +62,32 @@ func loadCaPool() *x509.CertPool {
 		panic("bbb")
 	}
 	return certPool
+}
+
+func aaa(ctx context.Context) (context.Context, error) {
+	p, ok := peer.FromContext(ctx)
+	if !ok {
+		return ctx, status.Error(codes.Unauthenticated, "no peer found")
+	}
+
+	tlsAuth, ok := p.AuthInfo.(credentials.TLSInfo)
+	if !ok {
+		return ctx, status.Error(codes.Unauthenticated, "unexpected peer transport credentials")
+	}
+
+	if len(tlsAuth.State.VerifiedChains) == 0 || len(tlsAuth.State.VerifiedChains[0]) == 0 {
+		return ctx, status.Error(codes.Unauthenticated, "could not verify peer certificate")
+	}
+
+	subject := tlsAuth.State.VerifiedChains[0][0].Subject.CommonName
+	fmt.Println(subject)
+	if subject != "ziik.user.cubyte.space" {
+		return ctx, status.Error(codes.Unauthenticated, "invalid subject common name")
+	} else {
+		fmt.Println("common name MATCH")
+	}
+
+	return ctx, nil
 }
 
 func main() {
@@ -74,7 +113,10 @@ func main() {
 
 	tlsCredentials := credentials.NewTLS(tlsConfig)
 
-	s := grpc.NewServer(grpc.Creds(tlsCredentials))
+	s := grpc.NewServer(grpc.Creds(tlsCredentials),
+		grpc.StreamInterceptor(grpcauth.StreamServerInterceptor(aaa)),
+		grpc.UnaryInterceptor(grpcauth.UnaryServerInterceptor(aaa)),
+	)
 	aaa_cz.RegisterGreeterServer(s, &server{})
 
 	// is needed for ACME challenge

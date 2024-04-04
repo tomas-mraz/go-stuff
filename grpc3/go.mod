@@ -3,6 +3,7 @@ module grpc3
 go 1.22.0
 
 require (
+    github.com/grpc-ecosystem/go-grpc-middleware/auth v2.1.0
 	github.com/johanbrandhorst/certify v1.9.0
 	golang.org/x/crypto v0.12.0
 	google.golang.org/grpc v1.59.0
