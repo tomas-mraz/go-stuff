@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
-	grpcauth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -114,8 +114,8 @@ func main() {
 	tlsCredentials := credentials.NewTLS(tlsConfig)
 
 	s := grpc.NewServer(grpc.Creds(tlsCredentials),
-		grpc.StreamInterceptor(grpcauth.StreamServerInterceptor(aaa)),
-		grpc.UnaryInterceptor(grpcauth.UnaryServerInterceptor(aaa)),
+		grpc.UnaryInterceptor(auth.UnaryServerInterceptor(aaa)),
+		grpc.StreamInterceptor(auth.StreamServerInterceptor(aaa)),
 	)
 	aaa_cz.RegisterGreeterServer(s, &server{})
 
