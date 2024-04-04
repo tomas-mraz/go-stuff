@@ -30,12 +30,13 @@ func main() {
 	// Certify
 	issuer := &vault.Issuer{
 		URL: &url.URL{
-			Scheme: "https",
-			Host:   "security.cubyte.online",
+			Scheme: "http",
+			Host:   "security.cubyte.online:8200",
 		},
-		AuthMethod: vault.ConstantToken("token"),
-		Role:       "role",
+		AuthMethod: vault.ConstantToken("hvs.CAESIND8NZ82wSJwSfljQxXdwDNsgoh2Vr86cBtZRke1V8v5Gh4KHGh2cy5aaHllQnl2cTJMbUl3TTc3ZTBiNTZmVmo"),
+		Role:       "cubyte-dot-space",
 		TimeToLive: 8 * time.Hour,
+		Mount:      "pki_int",
 	}
 	cert := &certify.Certify{
 		CommonName:  "ziik.user.cubyte.space",
@@ -59,7 +60,7 @@ func main() {
 	c := aaa_cz.NewGreeterClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	r, err := c.SayHello(ctx, &aaa_cz.HelloRequest{Name: *name})
 	if err != nil {
