@@ -51,7 +51,7 @@ func (s *server) SayHello(ctx context.Context, in *aaa_cz.HelloRequest) (*aaa_cz
 
 func loadCaPool() *x509.CertPool {
 	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := os.ReadFile("certs/ca-cert.pem")
+	pemServerCA, err := os.ReadFile("data/ca-root-cert.pem")
 	if err != nil {
 		fmt.Println("failed to read file with CA certificate")
 		panic("aaa")
@@ -80,12 +80,13 @@ func aaa(ctx context.Context) (context.Context, error) {
 	}
 
 	subject := tlsAuth.State.VerifiedChains[0][0].Subject.CommonName
-	fmt.Println(subject)
-	if subject != "ziik.user.cubyte.space" {
-		return ctx, status.Error(codes.Unauthenticated, "invalid subject common name")
-	} else {
-		fmt.Println("common name MATCH")
-	}
+	fmt.Println("client commo name: " + subject)
+
+	//if subject != "ziik.user.cubyte.space" {
+	//	return ctx, status.Error(codes.Unauthenticated, "invalid subject common name")
+	//} else {
+	//	fmt.Println("common name MATCH")
+	//}
 
 	return ctx, nil
 }
@@ -104,7 +105,7 @@ func main() {
 	certManager := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(servername),
-		Cache:      autocert.DirCache("certs"),
+		Cache:      autocert.DirCache("acme"),
 	}
 	tlsConfig := certManager.TLSConfig()
 	tlsConfig.MinVersion = tls.VersionTLS12
