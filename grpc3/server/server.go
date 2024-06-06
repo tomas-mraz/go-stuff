@@ -51,13 +51,13 @@ func (s *server) SayHello(ctx context.Context, in *aaa_cz.HelloRequest) (*aaa_cz
 
 func loadCaPool() *x509.CertPool {
 	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := os.ReadFile("data/ca-root-cert.pem")
+	pemClientCaCert, err := os.ReadFile("data/ca-root-cert.pem")
 	if err != nil {
 		fmt.Println("failed to read file with CA certificate")
 		panic("aaa")
 	}
 	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
+	if !certPool.AppendCertsFromPEM(pemClientCaCert) {
 		fmt.Println("failed to add server CA's certificate")
 		panic("bbb")
 	}
@@ -80,7 +80,7 @@ func aaa(ctx context.Context) (context.Context, error) {
 	}
 
 	subject := tlsAuth.State.VerifiedChains[0][0].Subject.CommonName
-	fmt.Println("client commo name: " + subject)
+	fmt.Println("client common name: " + subject)
 
 	//if subject != "ziik.user.cubyte.space" {
 	//	return ctx, status.Error(codes.Unauthenticated, "invalid subject common name")
