@@ -19,6 +19,7 @@ About Golang and things around...
 
 
 # External links
+- [Cogent Core](https://github.com/cogentcore/core) - Vulkan Go framework
 - [Gio UI](https://gioui.org/) - multiplatform GUI for Go
 - [MoltenVK](https://github.com/KhronosGroup/MoltenVK) - Vulkan on Apple devices
 - [pkg.go.dev](https://pkg.go.dev) - Go package listing and search engine.
