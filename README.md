@@ -19,6 +19,8 @@ About Golang and things around...
 
 
 # External links
+- [Vulkan bindings](https://github.com/goki/vulkan) - maintained fork of xlab's go-vulkan
+- [Vulkan GPU framework](https://github.com/goki/vgpu) - like xlab's asche
 - [Cogent Core](https://github.com/cogentcore/core) - Vulkan Go framework
 - [Gio UI](https://gioui.org/) - multiplatform GUI for Go
 - [MoltenVK](https://github.com/KhronosGroup/MoltenVK) - Vulkan on Apple devices
